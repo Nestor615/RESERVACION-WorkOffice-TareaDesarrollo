@@ -222,6 +222,7 @@ namespace RESERVACION_WorkOffice_TareaDesarrollo
             FormUsuarios usuarioForm = new FormUsuarios();
             usuarioForm.Show();
 
+            Close();
         }
     }
 }
