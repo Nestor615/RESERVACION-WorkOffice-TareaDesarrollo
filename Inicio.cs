@@ -1,4 +1,5 @@
 ﻿using MySql.Data.MySqlClient;
+using RESERVACION_WorkOffice_TareaDesarrollo.Clases;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -15,25 +16,35 @@ namespace RESERVACION_WorkOffice_TareaDesarrollo
     {
         public string connectionString = "Server=localhost;Database=reservacion;User ID=root;";
 
+        ReservasService reservasService = new ReservasService();
+
         public Inicio()
         {          
             InitializeComponent();
+            CargarReservas();
             CargarDatosReservasMenus();
             CargarSalas();
-            CalcularTotalPago();
+            CalcularTotalPago();     
+        }
+
+        private void CargarReservas()
+        {
+            List<Reservas> reservas = reservasService.ObtenerReservas();
+            dgvReservas.AutoGenerateColumns = true;
+            dgvReservas.DataSource = reservas;
         }
 
         private void btnConfirmar_Click(object sender, EventArgs e)
         {
+            CalcularTotalPago();
+
             int idSala = ((KeyValuePair<int, string>)cmbSalas.SelectedItem).Key;
             DateTime fechaReserva = dtpFechaReserva.Value;
             TimeSpan horaInicio = dtpHoraInicio.Value.TimeOfDay;
             TimeSpan horaFin = dtpHoraFin.Value.TimeOfDay;
             string personaReserva = txtPersona.Text;
             string nombresAsistentes = txtAsistentes.Text;
-            decimal totalPago = Convert.ToDecimal(lblTotalPago.Text.Replace("Total a Pagar: $", ""));
-
-            CalcularTotalPago();           
+            decimal totalPago = Convert.ToDecimal(lblTotalPago.Text.Replace("Total a Pagar: $", ""));           
 
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
@@ -92,6 +103,8 @@ namespace RESERVACION_WorkOffice_TareaDesarrollo
 
                         transaction.Commit();
                         MessageBox.Show("Reserva realizada con éxito.", "Reserva", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                        CargarReservas();
                     }
                     catch (Exception ex)
                     {
@@ -186,6 +199,7 @@ namespace RESERVACION_WorkOffice_TareaDesarrollo
                     int cantidadPersonas = reader.GetInt32("cantidadPersonas");
                     dgvMenu.Rows.Add(idMenu, cantidadPersonas);
                 }
+                dgvMenu.AutoGenerateColumns = true;
             }
         }
 
@@ -201,6 +215,13 @@ namespace RESERVACION_WorkOffice_TareaDesarrollo
         private void dgvMenu_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
             CalcularTotalPago();
+        }
+
+        private void usuariosToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FormUsuarios usuarioForm = new FormUsuarios();
+            usuarioForm.Show();
+
         }
     }
 }
